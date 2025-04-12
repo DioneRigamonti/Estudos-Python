@@ -17,7 +17,9 @@ options.add_argument("--start-maximized")
 options.add_argument("--disable-logging") #Desativa logs do navegador, evitando que o console fique poluído com mensagens desnecessárias
 #option.add_argument("--headless=new")
 
-driver = webdriver.Chrome(options=options)
+servico = Service(EdgeChromiumDriverManager().install())
+#driver = webdriver.Chrome(options=options)
+driver = webdriver.Edge(service=servico,options=options)
 
 # Tira o 'navigator.webdriver'
 driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -36,21 +38,26 @@ def paginas(zipped):
     for site, tema in zipped:
         if contador == 0:
             driver.get(site)
+            sleep(0.5)
         else:
             driver.execute_script(f"window.open('{site}', '_blank');")
             driver.switch_to.window(driver.window_handles[-1])
+            sleep(0.5)
 
         # Espera o campo de busca estar presente e visível
         campo_busca = wait.until(EC.visibility_of_element_located((By.XPATH, '//*[@id="APjFqb"]')))
         campo_busca.send_keys(tema)
+        sleep(0.5)
 
         # Espera o botão "Pesquisar Google" estar clicável e clica
         botao_pesquisar = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, 'gNO89b')))
         botao_pesquisar.click()
+        sleep(0.5)
 
         contador += 1
 
 paginas(juntar)
 
-WebDriverWait(driver, 60).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))  # só pra manter aberto um tempo
+sleep(60)
+WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))  # só pra manter aberto um tempo
 driver.quit()
